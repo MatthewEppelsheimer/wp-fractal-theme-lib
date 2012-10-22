@@ -67,6 +67,21 @@ function fractal_block( $block, $block_closure ) {
 }
 
 /*
+ *	fractal_parent()
+ */
+
+function fractal_parent() {
+	global $fractal;
+	
+	if ( ! isset( $fractal['working_block'] ) )
+		return "<p>fractal_parent returned false</p>";
+	$working_block = $fractal['working_block'];
+	if ( ! isset( $fractal[$working_block]['html'] ) )
+		return "<p>fractal_parent returned false</p>";
+	echo $fractal[$working_block]['html'];
+}
+
+/*
  *	fractal( $fractal_parent_file )
  *	@description	Template tag called at the end of each fractal template file.
  *					Handles inheritance starts the chain collapse when at the base
@@ -123,21 +138,6 @@ function fractal_crawl( $block ) {
 	echo $fractal[$block]['html'];
 }
  
-/*
- *	fractal_parent()
- */
-
-function fractal_parent() {
-	global $fractal;
-	
-	if ( ! isset( $fractal['working_block'] ) )
-		return "<p>fractal_parent returned false</p>";
-	$working_block = $fractal['working_block'];
-	if ( ! isset( $fractal[$working_block]['html'] ) )
-		return "<p>fractal_parent returned false</p>";
-	echo $fractal[$working_block]['html'];
-}
-
 /*
  *	Shortcode Setup
  *
