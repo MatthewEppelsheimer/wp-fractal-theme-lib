@@ -60,8 +60,10 @@ function fractal_block( $block, $block_closure ) {
 	global $fractal;
 	
 	$fractal[$block]['closures'][] = $block_closure;
-	if ( $fractal['crawl'] )
-		fractal_crawl( $block );	
+	if ( $fractal['crawl'] ) {
+		$output = fractal_crawl( $block );	
+		return $output;
+	}
 }
 
 /*
@@ -107,16 +109,34 @@ function fractal_crawl( $block ) {
 		
 		$closure = array_pop( $fractal[$block]['closures'] );
 		if ( is_callable( $closure ) ) {
-			$fractal[$block]['html'] = call_user_func( $closure );
+			ob_start();
+			call_user_func( $closure );
+			$output = ob_get_contents();
+			ob_end_clean();
+			$fractal[$block]['html'] = $output;
 		}
-		/*echo "\n<p>Through the while loop within fractal_crawl(). fractal is:</p>\n";
+		/* echo "\n<p>Through the while loop within fractal_crawl(). fractal is:</p>\n";
 		print_r( $fractal );
-		echo "\n";*/
+		echo "\n"; */
 	
 	}	
-	return $fractal[$block]['html'];
+	echo $fractal[$block]['html'];
 }
  
+/*
+ *	fractal_parent()
+ */
+
+function fractal_parent() {
+	global $fractal;
+	
+	if ( ! isset( $fractal['working_block'] ) )
+		return "<p>fractal_parent returned false</p>";
+	$working_block = $fractal['working_block'];
+	if ( ! isset( $fractal[$working_block]['html'] ) )
+		return "<p>fractal_parent returned false</p>";
+	echo $fractal[$working_block]['html'];
+}
 
 /*
  *	Shortcode Setup
@@ -134,20 +154,3 @@ function fractal_template() {
 	return;
 }
 
-/*
- *	fractal_parent()
- */
-
-function fractal_parent() {
-	global $fractal;
-	
-	if ( ! isset( $fractal['working_block'] ) )
-		return "<p>fractal_parent returned false</p>";
-	$working_block = $fractal['working_block'];
-	if ( ! isset( $fractal[$working_block]['html'] ) )
-		return "<p>fractal_parent returned false</p>";
-
-	echo "<p>Working block is " . $fractal['working_block'] . ". The html is " . $fractal[$working_block]['html'] . ".</p>";
-	
-	return $fractal[$working_block]['html'];
-}
