@@ -86,18 +86,18 @@ function fractal_parent() {
  *	@description	Template tag called at the end of each fractal template file.
  *					Handles inheritance starts the chain collapse when at the base
  *
- *	@param	$fractal_parent_file	The parent file this calling file inherits from
+ *	@param	$fractal_parent	The parent file this calling file inherits from
  */
 
-function fractal( /* $fractal_parent_file */ ) {
+function fractal( $fractal_parent = null ) {
 	global $fractal;
 	
 	// if there is a parent file
-
-	/*	STUFF HERE	*/	
+	if ( isset( $fractal_parent ) ) {
+		locate_template( "/fractal/fractal.$fractal_parent.php", true );
+		return true;
+	}
 	
-	// if there is not a parent file
-
 	// switch to crawl mode;
 	$fractal['crawl'] = true;
 
