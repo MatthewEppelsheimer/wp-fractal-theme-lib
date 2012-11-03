@@ -74,7 +74,7 @@ function fractal_parent() {
 }
 
 /*
- *	fractal( $fractal_parent_file )
+ *	fractal( $fractal_parent )
  *	@description	Template tag called at the end of each fractal template file.
  *					Handles inheritance starts the chain collapse when at the base
  *
@@ -146,3 +146,11 @@ function fractal_template() {
 	return;
 }
 
+/**
+ *	Enable fractal debugging
+ */
+
+function fractal_debug( $bool = true ) {
+	global $fractal;
+	$fractal['debug'] = $bool;
+}
