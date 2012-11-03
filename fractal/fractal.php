@@ -14,7 +14,7 @@ License: GPL 2
 /* @todo
 */
 
-function wp_fractal_deactivate() {
+function fractal_deactivate() {
 	/*	Stuff	
 		Such as detecting themes that require this plugin's support, and possibly disable them
 	*/
