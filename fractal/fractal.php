@@ -50,8 +50,7 @@ add_action( 'template_redirect', 'fractal_template_setup', 1 );
 
 function fractal_block( $block, $block_closure ) {
 	global $fractal;
-
-	fractal_debug_capture( __FUNCTION__, 'before doing work', $block );
+	do_action( 'fractal_block_begin', $block );
 	
 	$fractal[$block]['closures'][] = $block_closure;
 	if ( $fractal['crawl'] ) {
@@ -59,7 +58,7 @@ function fractal_block( $block, $block_closure ) {
 		return $output;
 	}
 
-	fractal_debug_capture( __FUNCTION__, 'after doing work', $block );
+	do_action( 'fractal_block_end', $block );
 }
 
 /*
@@ -113,9 +112,9 @@ function fractal( $fractal_parent = null ) {
 
 function fractal_crawl( $block ) {
 	global $fractal;
-	$fractal['working_block'] = $block;
+	do_action( 'fractal_crawl_begin', $block );
 
-	fractal_debug_capture( __FUNCTION__, "after setting 'working_block to '$block'", $block );
+	$fractal['working_block'] = $block;
 
 	// Assemble output by calling closures in the block's chain
 	while ( count( $fractal[$block]['closures'] ) > 0 ) {
@@ -130,8 +129,7 @@ function fractal_crawl( $block ) {
 		}
 	}	
 
-	fractal_debug_capture( __FUNCTION__, "after assembling output for block $block, which is: $fractal[$block]['html']", $block );
-
+	do_action( 'fractal_crawl_end', $block );
 	echo $fractal[$block]['html'];
 }
  
