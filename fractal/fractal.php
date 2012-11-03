@@ -50,12 +50,16 @@ add_action( 'template_redirect', 'fractal_template_setup', 1 );
 
 function fractal_block( $block, $block_closure ) {
 	global $fractal;
+
+	fractal_debug_capture( __FUNCTION__, 'before doing work', $block );
 	
 	$fractal[$block]['closures'][] = $block_closure;
 	if ( $fractal['crawl'] ) {
 		$output = fractal_crawl( $block );	
 		return $output;
 	}
+
+	fractal_debug_capture( __FUNCTION__, 'after doing work', $block );
 }
 
 /*
@@ -95,23 +99,25 @@ function fractal( $fractal_parent = null ) {
 
 	// Start the fractal chain collapse and echo results
 	echo fractal_crawl( 'base' );
+	
+	// the Fractal process is done.
+	do_action( 'fractal_after' );
 }
 
 /*
  *	fractal_crawl()
  *	@description	Crawl up the assembled fractal chain to assemble output and echo it.
  *
- *	@param	$block	The block to stitch
+ *	@param	$block	The block to assemble
  */
 
 function fractal_crawl( $block ) {
 	global $fractal;
 	$fractal['working_block'] = $block;
 
-	/*echo "\n<p>Called fractal_crawl( '$block' ). Entering with:</p>\n";
-	print_r( $fractal );
-	echo "\n";*/
-	
+	fractal_debug_capture( __FUNCTION__, "after setting 'working_block to '$block'", $block );
+
+	// Assemble output by calling closures in the block's chain
 	while ( count( $fractal[$block]['closures'] ) > 0 ) {
 		
 		$closure = array_pop( $fractal[$block]['closures'] );
@@ -122,11 +128,10 @@ function fractal_crawl( $block ) {
 			ob_end_clean();
 			$fractal[$block]['html'] = $output;
 		}
-		/* echo "\n<p>Through the while loop within fractal_crawl(). fractal is:</p>\n";
-		print_r( $fractal );
-		echo "\n"; */
-	
 	}	
+
+	fractal_debug_capture( __FUNCTION__, "after assembling output for block $block, which is: $fractal[$block]['html']", $block );
+
 	echo $fractal[$block]['html'];
 }
  
@@ -153,4 +158,29 @@ function fractal_template() {
 function fractal_debug( $bool = true ) {
 	global $fractal;
 	$fractal['debug'] = $bool;
+}
+
+/**
+ *	Conditional to check if fractal debugging is enabled
+ */
+
+function fractal_is_debug() {
+	global $fractal;
+	if ( isset( $fractal['debug'] ) )
+		return $fractal['debug'];
+	return false;
+}
+
+/**
+ *	Generate debugging info capture point
+ */
+
+function fractal_debug_capture( $calling_function = null, $context = null , $block = null ) {
+	global $fractal;
+	// Filter hook allows to change the condition
+	if ( apply_filters( 'fractal_debug_report_conditional', fractal_is_debug() ) ) {
+		do_action( "fractal_debug_capture_$calling_function", $calling_function, $context, $block );
+	} else {
+		return;
+	}
 }
