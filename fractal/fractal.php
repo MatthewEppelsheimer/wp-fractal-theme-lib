@@ -50,10 +50,17 @@ add_action( 'template_redirect', 'fractal_template_setup', 1 );
 
 function fractal_block( $block, $block_closure ) {
 	global $fractal;
-	do_action( 'fractal_block_begin', $block );
 
-	// If we're done with this block (it's already been declared without calling fractal_parent), do nothing.
-	// (detect based on 'needs_parent'. If it's true, we proceed. If it's not set, we set it to false and proceed. If it's false, we bail out.)
+	if ( isset( $fractal[$block]['needs_parent'] ) ) {
+		// If we're done with this block (it's already been declared without calling fractal_parent), do nothing.
+		if ( ! $fractal[$block]['needs_parent'] ) 
+			return;
+	}
+	// This is either the first time we've encountered this block, or we're here because its parent has been called.
+	// Set 'needs_parent' to false before evaluating the closure.
+	$fractal[$block]['needs_parent'] = false;
+
+	do_action( 'fractal_block_begin', $block );
 
 	// Store the closure
 	$fractal[$block]['closures'][] = $block_closure;
@@ -65,9 +72,12 @@ function fractal_block( $block, $block_closure ) {
 	}
 
 	// Set this to the working block
+	$fractal['working_block'] = $block;
 
-	// Call the closure (but do not destroy it!). 
-	// Here we are looking for child blocks and giving fractal_parent an opportunity to work.
+	// Call the closure (but do not destroy it or do anything with the returned results). 
+	// Here we are giving fractal_parent an opportunity to set 'needs_parent' back to true.
+	if ( is_callable( $block_closure ) );
+		$trash_bin = $block_closure();
 	
 	do_action( 'fractal_block_end', $block );
 }
