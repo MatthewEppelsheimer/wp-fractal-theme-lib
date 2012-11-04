@@ -51,29 +51,51 @@ add_action( 'template_redirect', 'fractal_template_setup', 1 );
 function fractal_block( $block, $block_closure ) {
 	global $fractal;
 	do_action( 'fractal_block_begin', $block );
-	
+
+	// If we're done with this block (it's already been declared without calling fractal_parent), do nothing.
+	// (detect based on 'needs_parent'. If it's true, we proceed. If it's not set, we set it to false and proceed. If it's false, we bail out.)
+
+	// Store the closure
 	$fractal[$block]['closures'][] = $block_closure;
+
+	// If we are crawling, call fractal_crawl and return its output
 	if ( $fractal['crawl'] ) {
 		$output = fractal_crawl( $block );	
 		return $output;
 	}
 
+	// Set this to the working block
+
+	// Call the closure (but do not destroy it!). 
+	// Here we are looking for child blocks and giving fractal_parent an opportunity to work.
+	
 	do_action( 'fractal_block_end', $block );
 }
 
 /*
  *	fractal_parent()
+ *
+ *	Called for one of two reasons:
+ *		1) we're looking for parents before crawling
+ *		2) we're actually crawling, and need to return parent code.
  */
 
 function fractal_parent() {
 	global $fractal;
 	
-	if ( ! isset( $fractal['working_block'] ) )
-		return "<p>fractal_parent returned false</p>";
+	// Store working block for convenience
 	$working_block = $fractal['working_block'];
-	if ( ! isset( $fractal[$working_block]['html'] ) )
-		return "<p>fractal_parent returned false</p>";
-	echo $fractal[$working_block]['html'];
+
+	// Are we doing setup or crawling?
+	if ( isset( $fractal['crawling'] ) ) {
+		// We're actually crawling
+		if ( ! isset( $fractal[$working_block]['html'] ) )
+		echo $fractal[$working_block]['html'];
+	} else { 
+		// We are doing setup. We are here to detect whether the working block
+		// incorporates its parent. We now know that it does.
+		$fractal[$working_block]['needs_parent'] = true;
+	}
 }
 
 /*
