@@ -122,6 +122,10 @@ function fractal( $fractal_parent = null ) {
 		return true;
 	}
 	
+	// Time to start collapsing.
+	$fractal['collapse'] = true;
+	echo fractal_collapse( 'base' );
+
 	// the Fractal process is done.
 	do_action( 'fractal_after' );
 }
@@ -171,10 +175,6 @@ function fractal_stitch( $block, $block_closure ) {
 	// Set this to the working block
 	$fractal['working_block'] = $block;
 
-	// If this is 'base', time to start collapsing.
-	if ( $block == 'base' )
-		$fractal['collapse'] = true;
-
 	// Store the closure 
 	$fractal['blocks'][$block]['closures'][] = $block_closure;
 
@@ -201,13 +201,12 @@ function fractal_collapse( $block ) {
 	// For extensibility and debugging
 	do_action( 'fractal_collapse_begin', $block );
 
-	$fractal['working_block'] = $block;
-
 	// Assemble output by calling closures in the block's chain
 	while ( count( $fractal['blocks'][$block]['closures'] ) > 0 ) {
 		
 		$closure = array_pop( $fractal['blocks'][$block]['closures'] );
 		if ( is_callable( $closure ) ) {
+			$fractal['working_block'] = $block;
 			ob_start();
 			call_user_func( $closure );
 			$output = ob_get_contents();
@@ -216,8 +215,8 @@ function fractal_collapse( $block ) {
 		}
 	}	
 
-	do_action( 'fractal_collapse_end', $block );
 	echo $fractal['blocks'][$block]['html'];
+	do_action( 'fractal_collapse_end', $block );
 }
  
 /*
