@@ -54,30 +54,40 @@ function fractal_block( $block, $block_closure ) {
 	// Set 'needs_parent' to false before evaluating the closure.
 	$fractal[$block]['needs_parent'] = false;
 
+	// Bail out with a warning if the closure is invalid
+	if ( ! is_callable( $block_closure ) ) {
+		echo "<p><strong>Warning:</strong> fractal_block( $block ) was passed an uncallable function.</p>";
+		return false;
+	}
+
 	// For extensibility and debugging
 	do_action( 'fractal_block_begin', $block );
-
-	// Store the closure
-	$fractal[$block]['closures'][] = $block_closure;
-
-	// If we are collapsing, call fractal_collapse and return its output
-	if ( $fractal['collapse'] ) {
-		$output = fractal_collapse( $block );	
-		return $output;
-	}
 
 	// Set this to the working block
 	$fractal['working_block'] = $block;
 
-	// Call the closure (but do not destroy it or do anything with the returned results). 
-	// Here we are giving fractal_parent an opportunity to set 'needs_parent' back to true.
-	// We are also looking for nested fractal_block calls, to build their chains.
+	// If this is 'base', time to start collapsing.
+	if ( $block == 'base' )
+		$fractal['collapse'] = true;
 
-	// @todo ONLY DO THIS IF WE AREN'T COLLAPSING.
+	// Store the closure 
+	$fractal[$block]['closures'][] = $block_closure;
 
-	if ( is_callable( $block_closure ) );
-		$html = $block_closure();
-	
+	if ( $fractal['collapse'] ) {
+		// We are collapsing. Call fractal_collapse and return its output
+		$output = fractal_collapse( $block );	
+		return $output;
+	} else {
+		// We aren't collapsing yet.
+		// Call the closure (but do not remove it from the closure array or do anything with the returned results). 
+		// Here we are giving fractal_parent an opportunity to set 'needs_parent' back to true.
+		// We are also looking for nested fractal_block calls to build their chains.
+		// We won't use the returned value. 
+		ob_start();
+		$trash_bin = $block_closure();
+		ob_end_clean();
+	} 	
+
 	// For extensibility and debugging
 	do_action( 'fractal_block_end', $block );
 } 
@@ -164,8 +174,11 @@ add_action( 'template_redirect', 'fractal_template_setup', 1 );
  *	@param	$block	The block to assemble
  */
 
+// Assemble output by calling closures in the block's chain
+
 function fractal_collapse( $block ) {
 	global $fractal;
+	// For extensibility and debugging
 	do_action( 'fractal_collapse_begin', $block );
 
 	$fractal['working_block'] = $block;
