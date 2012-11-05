@@ -109,33 +109,6 @@ function fractal_parent() {
 }
 
 /*
- *	fractal( $fractal_parent )
- *	@description	Template tag called at the end of each fractal template file.
- *					Handles inheritance starts the chain collapse when at the base
- *
- *	@param	$fractal_parent	The parent file this calling file inherits from
- */
-
-function fractal( $fractal_parent = null ) {
-	global $fractal;
-	
-	// if there is a parent file
-	if ( isset( $fractal_parent ) ) {
-		locate_template( "/fractal/fractal.$fractal_parent.php", true );
-		return true;
-	}
-	
-	// switch to crawl mode;
-	$fractal['crawl'] = true;
-
-	// Start the fractal chain collapse and echo results
-	echo fractal_crawl( 'base' );
-	
-	// the Fractal process is done.
-	do_action( 'fractal_after' );
-}
-
-/*
  *	fractal_crawl()
  *	@description	Crawl up the assembled fractal chain to assemble output and echo it.
  *
@@ -166,10 +139,31 @@ function fractal_crawl( $block ) {
 }
  
 /*
- *	Shortcode Setup
+ *	fractal( $fractal_parent )
+ *	@description	Template tag called at the end of each fractal template file.
+ *					Handles inheritance starts the chain collapse when at the base
  *
- *	@todo: Extend support for declaring blocks in post content that are filtered like normal shortcodes on the_content();.
+ *	@param	$fractal_parent	The parent file this calling file inherits from
  */
+
+function fractal( $fractal_parent = null ) {
+	global $fractal;
+	
+	// if there is a parent file
+	if ( isset( $fractal_parent ) ) {
+		locate_template( "/fractal/fractal.$fractal_parent.php", true );
+		return true;
+	}
+	
+	// switch to crawl mode;
+	$fractal['crawl'] = true;
+
+	// Start the fractal chain collapse and echo results
+	echo fractal_crawl( 'base' );
+	
+	// the Fractal process is done.
+	do_action( 'fractal_after' );
+}
 
 /*
  *	fractal_template() is a TO BE IMPLEMENTED function that handles shortcode support
@@ -182,7 +176,7 @@ function fractal_template() {
 }
 
 /**
- *	Enable fractal debugging
+ *	Enable fractal debugging (or disable)
  */
 
 function fractal_debug( $bool = true ) {
