@@ -135,12 +135,6 @@ function fractal( $fractal_parent = null ) {
 		return true;
 	}
 	
-	// switch to collapse mode;
-	$fractal['collapse'] = true;
-
-	// Start the fractal chain collapse and echo results
-	echo fractal_collapse( 'base' );
-	
 	// the Fractal process is done.
 	do_action( 'fractal_after' );
 }
