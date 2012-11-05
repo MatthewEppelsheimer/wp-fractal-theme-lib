@@ -23,9 +23,6 @@ License: GPL 2
  
 function fractal_template() {
 
-	if ( ! isset( $fractal['initialized'] ) )
-		fractal_system_setup();
-	
 	return;
 }
 
@@ -159,7 +156,7 @@ function fractal_system_setup() {
 	return true;
 }
 
-add_action( 'template_redirect', 'fractal_template_setup', 1 );
+add_action( 'template_redirect', 'fractal_system_setup', 1 );
 
 /*
  *	fractal_collapse()
