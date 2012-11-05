@@ -130,6 +130,32 @@ function fractal( $fractal_parent = null ) {
 	do_action( 'fractal_after' );
 }
 
+/**
+ *	wp_head() handler to avoid calling until after 'collapse'.
+ */
+
+function fractal_wp_head() {
+	fractal_wrap( function() { wp_head(); } );
+}
+
+/**
+ *	wp_footer() handler to avoid calling until after 'collapse'
+ */
+
+function fractal_wp_footer() {
+	fractal_wrap( function() { wp_footer(); } );
+}
+
+/**
+ *	Generic handler for WP functions that shouldn't be called until 'collapse'.
+ */
+
+function fractal_wrap( $closure ) {
+	global $fractal;
+	if ( $fractal['collapse'] && is_callable( $closure ) )
+		$closure();
+}
+
 /*
  *	Core Fractal System Internals
  */
