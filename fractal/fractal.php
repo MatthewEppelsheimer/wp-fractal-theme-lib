@@ -38,55 +38,46 @@ function fractal_template() {
 function fractal_block( $block, $block_closure ) {
 	global $fractal;
 
-	// For debugging
-	do_action( 'fractal_block_pre', $block );
-	
-	// Decide whether we need to store and use this version of the block.
-	if ( isset( $fractal['blocks'][$block]['needs_parent'] ) ) {
-		if ( ! $fractal['blocks'][$block]['needs_parent'] ) 
-			// This block has already been declared without calling fractal_parent, so we are done with it. Do nothing.
-			return;
-	}
-	// This is either the first time we've encountered this block, or we're here because its parent has been called.
-	// Set 'needs_parent' to false before evaluating the closure.
-	$fractal['blocks'][$block]['needs_parent'] = false;
-
-	// Bail out with a warning if the closure is invalid
-	if ( ! is_callable( $block_closure ) ) {
-		echo "<p><strong>Warning:</strong> fractal_block( $block ) was passed an uncallable function.</p>";
-		return false;
-	}
-
 	// For extensibility and debugging
 	do_action( 'fractal_block_begin', $block );
 
-	// Set this to the working block
-	$fractal['working_block'] = $block;
-
-	// If this is 'base', time to start collapsing.
-	if ( $block == 'base' )
-		$fractal['collapse'] = true;
-
-	// Store the closure 
-	$fractal['blocks'][$block]['closures'][] = $block_closure;
-
 	if ( $fractal['collapse'] ) {
-		// We are collapsing. Call fractal_collapse and return its output
-		$output = fractal_collapse( $block );	
-		return $output;
-	} else {
-		// We aren't collapsing yet.
-		// Call the closure (but do not remove it from the closure array or do anything with the returned results). 
-		// Here we are giving fractal_parent an opportunity to set 'needs_parent' back to true.
-		// We are also looking for nested fractal_block calls to build their chains.
-		// We won't use the returned value. 
-		ob_start();
-		$trash_bin = $block_closure();
-		ob_end_clean();
-	} 	
+		// We are collapsing. 
 
-	// For extensibility and debugging
-	do_action( 'fractal_block_end', $block );
+		if ( ! isset( $fractal['blocks'][$block]['needs_parent'] ) ) {
+			// This is the first time we have encountered the block and need to include its closure
+			fractal_stitch( $block, $block_closure );
+		} elseif ( $fractal['blocks'][$block]['needs_parent'] ) {
+			// The parent has previously been called, so we need to include this version of the block's closure
+			fractal_stitch( $block, $block_closure );
+		}
+			
+		// Call the collapse process and return output
+		$output = fractal_collapse( $block );	
+
+		// For extensibility and debugging
+		do_action( 'fractal_block_end', $block );
+
+		return $output;
+
+	} else {
+	
+		// Decide whether we need to store and use this version of the block.
+		if ( isset( $fractal['blocks'][$block]['needs_parent'] ) ) {
+			if ( ! $fractal['blocks'][$block]['needs_parent'] ) 
+				// This block has already been declared without calling fractal_parent, so we are done with it. 
+				// Do nothing. 
+				return;
+		}
+		// This is either the first time we've encountered this block, or we're here because 
+		// its parent has been called.
+		// Evaluate the closure.
+		fractal_stitch( $block, $block_closure );
+
+		// For extensibility and debugging
+		do_action( 'fractal_block_end', $block );
+	} 
+
 } 
 
 /*
@@ -156,6 +147,45 @@ function fractal_system_setup() {
 }
 
 add_action( 'template_redirect', 'fractal_system_setup', 1 );
+
+/**
+ *	Add block closures to chain
+ *
+ *	Do not call this directly. Used by fractal_block().
+ *
+ *	@param	str	$block
+ */
+
+function fractal_stitch( $block, $block_closure ) {
+	global $fractal;
+
+	// Set 'needs_parent' to false, to allow fractal_parent() to work.
+	$fractal['blocks'][$block]['needs_parent'] = false;
+
+	// Bail out with a warning if the closure is invalid
+	if ( ! is_callable( $block_closure ) ) {
+		echo "<p><strong>Warning:</strong> fractal_block( $block ) was passed an uncallable function.</p>";
+		return false;
+	}
+
+	// Set this to the working block
+	$fractal['working_block'] = $block;
+
+	// If this is 'base', time to start collapsing.
+	if ( $block == 'base' )
+		$fractal['collapse'] = true;
+
+	// Store the closure 
+	$fractal['blocks'][$block]['closures'][] = $block_closure;
+
+	// Call the closure (but do not remove it from the closure array or do anything with the returned results). 
+	// Here we are giving fractal_parent an opportunity to set 'needs_parent' back to true.
+	// We are also looking for nested fractal_block calls to build their chains.
+	// We won't use the returned value. 
+	ob_start();
+	$trash_bin = $block_closure();
+	ob_end_clean();
+}
 
 /*
  *	fractal_collapse()
