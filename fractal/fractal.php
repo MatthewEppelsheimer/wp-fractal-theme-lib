@@ -10,13 +10,15 @@ License: GPL 2
 */
 
 /*
- *	Core Fractal System
+ *	Fractal System Template Tags
  */
  
 /*
  *	fractal_template() 
- *	This primarily exists for forward compatibility. In the future it shall enable other delightful things,
- *	such as shortcode support.
+ *
+ *	@description		Template tag required at the beginning of fractal template files. 
+ *						This primarily exists for forward compatibility. In the future it
+ *						shall enable other delightful things, such as shortcode support.
  */
  
 function fractal_template() {
@@ -26,21 +28,6 @@ function fractal_template() {
 	
 	return;
 }
-
-/*
- *	fractal_system_setup()
- *	@description	Prepares global the Fractal templating engine before loading templates
- */
-
-function fractal_system_setup() {
-	global $fractal;
-	$fractal = array();
-	$fractal['collapse'] = false;
-	$fractal['initialized'] = true;
-	return true;
-}
-
-add_action( 'template_redirect', 'fractal_template_setup', 1 );
 
 /*
  *	fractal_block( $block_name, $block_function )
@@ -53,20 +40,21 @@ add_action( 'template_redirect', 'fractal_template_setup', 1 );
 
 function fractal_block( $block, $block_closure ) {
 	global $fractal;
-	
-	// do setup if necessary
-	if ( ! isset( $fractal['initialized'] ) )
-		fractal_system_setup();
 
+	// For debugging
+	do_action( 'fractal_block_pre', $block );
+	
+	// Decide whether we need to store and use this version of the block.
 	if ( isset( $fractal[$block]['needs_parent'] ) ) {
-		// If we're done with this block (it's already been declared without calling fractal_parent), do nothing.
 		if ( ! $fractal[$block]['needs_parent'] ) 
+			// This block has already been declared without calling fractal_parent, so we are done with it. Do nothing.
 			return;
 	}
 	// This is either the first time we've encountered this block, or we're here because its parent has been called.
 	// Set 'needs_parent' to false before evaluating the closure.
 	$fractal[$block]['needs_parent'] = false;
 
+	// For extensibility and debugging
 	do_action( 'fractal_block_begin', $block );
 
 	// Store the closure
@@ -84,13 +72,14 @@ function fractal_block( $block, $block_closure ) {
 	// Call the closure (but do not destroy it or do anything with the returned results). 
 	// Here we are giving fractal_parent an opportunity to set 'needs_parent' back to true.
 	// We are also looking for nested fractal_block calls, to build their chains.
+
+	// @todo ONLY DO THIS IF WE AREN'T COLLAPSING.
+
 	if ( is_callable( $block_closure ) );
 		$html = $block_closure();
 	
+	// For extensibility and debugging
 	do_action( 'fractal_block_end', $block );
-
-	// @todo WHAT DO WE DO IF IT'S TIME TO OUTPUT? HOW DO WE TELL?
-
 } 
 
 /*
@@ -120,8 +109,57 @@ function fractal_parent() {
 }
 
 /*
+ *	fractal()
+ *	@description	Template tag called at the end of each fractal template file.
+ *					Handles inheritance and starts the chain collapse after the base.
+ *
+ *	@param	$fractal_parent	The parent file this calling file inherits from
+ */
+
+function fractal( $fractal_parent = null ) {
+	global $fractal;
+	
+	// if there is a parent file
+	if ( isset( $fractal_parent ) ) {
+		locate_template( "/fractal/fractal.$fractal_parent.php", true );
+		return true;
+	}
+	
+	// switch to collapse mode;
+	$fractal['collapse'] = true;
+
+	// Start the fractal chain collapse and echo results
+	echo fractal_collapse( 'base' );
+	
+	// the Fractal process is done.
+	do_action( 'fractal_after' );
+}
+
+/*
+ *	Core Fractal System Internals
+ */
+
+/*
+ *	fractal_system_setup()
+ *	@description		Internal function to prepare globals for the templating 
+ *						engine before loading templates
+ *
+ *	@use				Loaded on the 'template_redirect' hook.
+ */
+
+function fractal_system_setup() {
+	global $fractal;
+	$fractal = array();
+	$fractal['collapse'] = false;
+	$fractal['initialized'] = true;
+	return true;
+}
+
+add_action( 'template_redirect', 'fractal_template_setup', 1 );
+
+/*
  *	fractal_collapse()
- *	@description	Crawl up the assembled fractal chain to assemble output and echo it.
+ *	@description	Internal function to assemble fractal chain to output and echo it.
  *
  *	@param	$block	The block to assemble
  */
@@ -150,34 +188,7 @@ function fractal_collapse( $block ) {
 }
  
 /*
- *	fractal( $fractal_parent )
- *	@description	Template tag called at the end of each fractal template file.
- *					Handles inheritance starts the chain collapse when at the base
- *
- *	@param	$fractal_parent	The parent file this calling file inherits from
- */
-
-function fractal( $fractal_parent = null ) {
-	global $fractal;
-	
-	// if there is a parent file
-	if ( isset( $fractal_parent ) ) {
-		locate_template( "/fractal/fractal.$fractal_parent.php", true );
-		return true;
-	}
-	
-	// switch to collapse mode;
-	$fractal['collapse'] = true;
-
-	// Start the fractal chain collapse and echo results
-	echo fractal_collapse( 'base' );
-	
-	// the Fractal process is done.
-	do_action( 'fractal_after' );
-}
-
-/*
- *	Fractal System Debuggin
+ *	Fractal System Debugging
  */
 
 /**
