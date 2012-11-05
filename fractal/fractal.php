@@ -42,14 +42,14 @@ function fractal_block( $block, $block_closure ) {
 	do_action( 'fractal_block_pre', $block );
 	
 	// Decide whether we need to store and use this version of the block.
-	if ( isset( $fractal[$block]['needs_parent'] ) ) {
-		if ( ! $fractal[$block]['needs_parent'] ) 
+	if ( isset( $fractal['blocks'][$block]['needs_parent'] ) ) {
+		if ( ! $fractal['blocks'][$block]['needs_parent'] ) 
 			// This block has already been declared without calling fractal_parent, so we are done with it. Do nothing.
 			return;
 	}
 	// This is either the first time we've encountered this block, or we're here because its parent has been called.
 	// Set 'needs_parent' to false before evaluating the closure.
-	$fractal[$block]['needs_parent'] = false;
+	$fractal['blocks'][$block]['needs_parent'] = false;
 
 	// Bail out with a warning if the closure is invalid
 	if ( ! is_callable( $block_closure ) ) {
@@ -68,7 +68,7 @@ function fractal_block( $block, $block_closure ) {
 		$fractal['collapse'] = true;
 
 	// Store the closure 
-	$fractal[$block]['closures'][] = $block_closure;
+	$fractal['blocks'][$block]['closures'][] = $block_closure;
 
 	if ( $fractal['collapse'] ) {
 		// We are collapsing. Call fractal_collapse and return its output
@@ -106,12 +106,11 @@ function fractal_parent() {
 	// Are we doing setup or collapsing?
 	if ( $fractal['collapse'] ) {
 		// We're actually collapsing
-		if ( ! isset( $fractal[$working_block]['html'] ) )
-		echo $fractal[$working_block]['html'];
+		echo $fractal['blocks'][$working_block]['html'];
 	} else { 
 		// We are doing setup. We are here to detect whether the working block
 		// incorporates its parent. We now know that it does.
-		$fractal[$working_block]['needs_parent'] = true;
+		$fractal['blocks'][$working_block]['needs_parent'] = true;
 	}
 }
 
@@ -175,20 +174,20 @@ function fractal_collapse( $block ) {
 	$fractal['working_block'] = $block;
 
 	// Assemble output by calling closures in the block's chain
-	while ( count( $fractal[$block]['closures'] ) > 0 ) {
+	while ( count( $fractal['blocks'][$block]['closures'] ) > 0 ) {
 		
-		$closure = array_pop( $fractal[$block]['closures'] );
+		$closure = array_pop( $fractal['blocks'][$block]['closures'] );
 		if ( is_callable( $closure ) ) {
 			ob_start();
 			call_user_func( $closure );
 			$output = ob_get_contents();
 			ob_end_clean();
-			$fractal[$block]['html'] = $output;
+			$fractal['blocks'][$block]['html'] = $output;
 		}
 	}	
 
 	do_action( 'fractal_collapse_end', $block );
-	echo $fractal[$block]['html'];
+	echo $fractal['blocks'][$block]['html'];
 }
  
 /*
