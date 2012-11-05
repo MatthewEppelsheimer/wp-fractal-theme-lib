@@ -3,7 +3,7 @@
 Plugin Name: Fractal
 Version: 0.1
 Plugin URI: http://rocketlift.com/software/fractal
-Description: A templating engine for WordPress that supports template heirarchy and infinite nesting
+Description: A templating engine for WordPress that supports template inheritance and infinite nesting
 Author: Matthew Eppelsheimer
 Author URI: http://rocketlift.com/
 License: GPL 2
