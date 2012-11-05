@@ -48,7 +48,7 @@ function fractal_block( $block, $block_closure ) {
 			// This is the first time we have encountered the block and need to include its closure
 			fractal_stitch( $block, $block_closure );
 		} elseif ( $fractal['blocks'][$block]['needs_parent'] ) {
-			// The parent has previously been called, so we need to include this version of the block's closure
+			// The parent was called in the last block invocation, so we need to include this invocation in the chain
 			fractal_stitch( $block, $block_closure );
 		}
 			
@@ -96,7 +96,7 @@ function fractal_parent() {
 
 	// Are we doing setup or collapsing?
 	if ( $fractal['collapse'] ) {
-		// We're actually collapsing
+		// We are collapsing
 		echo $fractal['blocks'][$working_block]['html'];
 	} else { 
 		// We are doing setup. We are here to detect whether the working block
