@@ -97,7 +97,8 @@ function fractal_parent() {
 	// Are we doing setup or collapsing?
 	if ( $fractal['collapse'] ) {
 		// We are collapsing
-		echo $fractal['blocks'][$working_block]['html'];
+		if ( isset( $fractal['blocks'][$working_block]['html'] ) )
+			echo $fractal['blocks'][$working_block]['html'];
 	} else { 
 		// We are doing setup. We are here to detect whether the working block
 		// incorporates its parent. We now know that it does.
