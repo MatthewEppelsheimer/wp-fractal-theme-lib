@@ -17,14 +17,16 @@ Standard template files like `index.php` and `page.php` are required as always, 
 With Fractal, it is recommended to *only* use standard template files to declare their inheritance of Fractal templates that live inside of the the `fractal/` directory. Here is the standard `index.php` file contents:
 
 
-  <?php
-  /**
-   * index.php, the main template file.
-   */
-  
-  fractal_template();
-  
-  fractal( 'index' );
+```
+<?php
+/**
+ * index.php, the main template file.
+ */
+
+fractal_template();
+
+fractal( 'index' );
+```
 
 `fractal_template();` ensures the system is initialized. It must be the first line of code in every Fractal template file.
 
@@ -38,17 +40,19 @@ With Fractal, it is recommended to *only* use standard template files to declare
 2. It must declare the fractal_block `base`.
 3. It must end with `fractal();`. Note that in this case we don't pass an ancestor template to the function.
 
-  <?php
-  /**
-   * fractal.base.php, the foundational Fractal template.
-   */
-  
-  fractal_template();
+```
+<?php
+/**
+ * fractal.base.php, the foundational Fractal template.
+ */
 
-  fractal_block( 'base', function(){
-  
-    // ...
-  
-  });
-  
-  fractal();
+fractal_template();
+
+fractal_block( 'base', function(){
+
+  // ...
+
+});
+
+fractal();
+```
