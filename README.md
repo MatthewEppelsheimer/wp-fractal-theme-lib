@@ -37,7 +37,7 @@ fractal( 'index' );
 `fractal.base.php` is special: It is the foundational template that all others inherit from. There are three requirements for this file:
 
 1. It must begin with `fractal_template();` (like every template file).
-2. It must declare the fractal_block `base`.
+2. It must declare the fractal_block `base`. Fractal understands that `base` is the foundational block name.
 3. It must end with `fractal();`. Note that in this case we don't pass an ancestor template to the function.
 
 ```
@@ -52,7 +52,13 @@ fractal_block( 'base', function(){
 
   // ...
 
-});
+}); /* end fractal_block 'base' */
 
 fractal();
 ```
+
+### Using fractal_block()
+
+The function `fractal_block( $block_name, $block_closure )` is used to identify and define blocks of template code. `$block_name`s can be anything arbitrary. `$block_closure` is a closure function (a.k.a. lambda function), containing template code. 
+
+fractal_blocks can be nested inside of each other.  
