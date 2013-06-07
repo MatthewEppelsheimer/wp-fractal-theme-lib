@@ -68,7 +68,7 @@ class FractalTools {
 	
 	function custom_query_loop( $args, $template_callback ) {
 		if ( empty( $template_callback ) )
-			wp_die( '<pre>$template_callback not set when calling ' . __FUNCTION__ . ' in ' . __FILE__ . ' at ' . __LINE__ . '</pre>\n' ); 
+			return '<pre>$template_callback not set when calling ' . __FUNCTION__ . ' in ' . __FILE__ . ' at ' . __LINE__ . '</pre>'; 
 
 		global $post;
 	
@@ -92,4 +92,4 @@ class FractalTools {
 }
 
 if ( FRACTAL_LEAF === __FILE__ )
-	new Fractal();
+	new FractalTools();
