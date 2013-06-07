@@ -22,7 +22,7 @@ class FractalTools {
 	 *
 	 * 	@uses				FractalTools::get_posts()
 	 *
-	 *	@returns			An array of WP_Query results of the custom post type passed
+	 *	@returns			A WP_Query object with query results from the custom post type
 	 *
 	 *	@since		2013/06/06
 	 */
@@ -38,7 +38,7 @@ class FractalTools {
 	 *	@param		array	$query_args	(optional) Array of arguments formulated
 	 *						to pass to the WP_Query class constructor
 	 *
-	 *	@returns			An array of WP_Query results 
+	 *	@returns			A WP_Query object 
 	 *
 	 *	@since		2013/06/06
 	 */
@@ -61,7 +61,7 @@ class FractalTools {
 	 *	@param	$args				(optional) An array of $args formatted for WP_Query to accept
 	 *	@param	$template_callback	(required) A template callback to render output inside the loop.
 	 *	
-	 *	@return						Output if we output html; false if not
+	 *	@return						Loop HTML output if the query has results; false if not
 	 *
 	 *	@since		2013/06/06
 	 */
