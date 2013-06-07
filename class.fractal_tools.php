@@ -72,7 +72,7 @@ class FractalTools {
 
 		global $post;
 	
-		$query = $this->get_posts( $args );
+		$query = FractalTools::get_posts( $args );
 	
 		if ( $query->have_posts() ) {
 			$output = "";
