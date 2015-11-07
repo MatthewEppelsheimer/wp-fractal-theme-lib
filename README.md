@@ -2,7 +2,11 @@
 
 An object oriented WordPress template engine supporting inheritance with infinite nesting.
 
-_This is alpha software._
+## Deprecated ##
+
+This project is no longer being maintained.
+
+Any project using it should replace it with something else, and any theme using either Fractal itself or Fractal patterns in its theme should have said theme be rewritten.
 
 ## Instructions for Use
 
